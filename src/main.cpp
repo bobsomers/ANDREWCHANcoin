@@ -15,6 +15,13 @@
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
 
+// ANDREWCHANcoin: To enable genesis block computation (in parallel), compile
+// with this at the end of your make command:
+//     CXXFLAGS="-DCOMPUTE_GENESIS_BLOCK -fopenmp"
+#ifdef COMPUTE_GENESIS_BLOCK
+#include <omp.h>
+#endif
+
 using namespace std;
 using namespace boost;
 
@@ -31,7 +38,7 @@ CTxMemPool mempool;
 unsigned int nTransactionsUpdated = 0;
 
 map<uint256, CBlockIndex*> mapBlockIndex;
-uint256 hashGenesisBlock("0x0635870a53a61c3c24658e067cc689a90a11926ec0f7f7eb4fa16c4db7b23937");
+uint256 hashGenesisBlock("0x");
 static CBigNum bnProofOfWorkLimit(~uint256(0) >> 20); // Litecoin: starting difficulty is 1 / 2^12
 CBlockIndex* pindexGenesisBlock = NULL;
 int nBestHeight = -1;
@@ -1074,8 +1081,8 @@ int64 static GetBlockValue(int nHeight, int64 nFees)
     return nSubsidy + nFees;
 }
 
-static const int64 nTargetTimespan = 1.0 * 24 * 60 * 60; // ANDREWCHANcoin: 1 day
-static const int64 nTargetSpacing = 2.0 * 60; // ANDREWCHANcoin: 2 minutes
+static const int64 nTargetTimespan = 1 * 24 * 60 * 60; // ANDREWCHANcoin: 1 day
+static const int64 nTargetSpacing = 2 * 60; // ANDREWCHANcoin: 2 minutes
 static const int64 nInterval = nTargetTimespan / nTargetSpacing;
 
 //
@@ -1140,7 +1147,7 @@ unsigned int static GetNextWorkRequired(const CBlockIndex* pindexLast, const CBl
     if ((pindexLast->nHeight+1) != nInterval)
         blockstogoback = nInterval;
 
-    // Go back by what we want to be 14 days worth of blocks
+    // Go back by what we want to be 1 day worth of blocks
     const CBlockIndex* pindexFirst = pindexLast;
     for (int i = 0; pindexFirst && i < blockstogoback; i++)
         pindexFirst = pindexFirst->pprev;
@@ -1149,10 +1156,31 @@ unsigned int static GetNextWorkRequired(const CBlockIndex* pindexLast, const CBl
     // Limit adjustment step
     int64 nActualTimespan = pindexLast->GetBlockTime() - pindexFirst->GetBlockTime();
     printf("  nActualTimespan = %"PRI64d"  before bounds\n", nActualTimespan);
-    if (nActualTimespan < nTargetTimespan/4)
-        nActualTimespan = nTargetTimespan/4;
-    if (nActualTimespan > nTargetTimespan*4)
-        nActualTimespan = nTargetTimespan*4;
+    //if (nActualTimespan < nTargetTimespan/4)
+    //    nActualTimespan = nTargetTimespan/4;
+    //if (nActualTimespan > nTargetTimespan*4)
+    //    nActualTimespan = nTargetTimespan*4;
+    if (pindexLast->nHeight+1 > 10000)
+    {
+        if (nActualTimespan < nTargetTimespan/4)
+            nActualTimespan = nTargetTimespan/4;
+        if (nActualTimespan > nTargetTimespan*4)
+            nActualTimespan = nTargetTimespan*4;
+    }
+    else if (pindexLast->nHeight+1 > 5000)
+    {
+        if (nActualTimespan < nTargetTimespan/8)
+            nActualTimespan = nTargetTimespan/8;
+        if (nActualTimespan > nTargetTimespan*4)
+            nActualTimespan = nTargetTimespan*4;
+    }
+    else
+    {
+        if (nActualTimespan < nTargetTimespan/16)
+            nActualTimespan = nTargetTimespan/16;
+        if (nActualTimespan > nTargetTimespan*4)
+            nActualTimespan = nTargetTimespan*4;
+    }
 
     // Retarget
     CBigNum bnNew;
@@ -2726,7 +2754,7 @@ bool LoadBlockIndex()
         pchMessageStart[1] = 0xc1;
         pchMessageStart[2] = 0xb7;
         pchMessageStart[3] = 0xdc;
-        hashGenesisBlock = uint256("0xfcea03bd073cf58f194be1c0ee712c529c60f0e88d2757dbb3f9f896dcceb5bb");
+        hashGenesisBlock = uint256("0x");
     }
 
     //
@@ -2771,14 +2799,14 @@ bool InitBlockIndex() {
         block.hashPrevBlock = 0;
         block.hashMerkleRoot = block.BuildMerkleTree();
         block.nVersion = 1;
-        block.nTime    = 1388824279;
+        block.nTime    = 1388838183;
         block.nBits    = 0x1e0ffff0;
-        block.nNonce   = 882787;
+        block.nNonce   = 0;
 
         if (fTestNet)
         {
-            block.nTime    = 1388824280;
-            block.nNonce   = 787288;
+            block.nTime    = 1388838183;
+            block.nNonce   = 0;
         }
 
         //// debug print
@@ -2788,6 +2816,66 @@ bool InitBlockIndex() {
         printf("%s\n", block.hashMerkleRoot.ToString().c_str());
         assert(block.hashMerkleRoot == uint256("0xbdabd4f856991e517ad8959cb8499ce1cbc74de24326c2960dfa0c5a143a6f3f"));
         block.print();
+
+        // ANDREWCHANcoin: Put back in code to search for a genesis block. Why
+        // did they take this out? And while we're at it, one up them by doing
+        // it in parallel with OpenMP.
+#ifdef COMPUTE_GENESIS_BLOCK
+        if (hash != hashGenesisBlock)
+        {
+            uint256 hashTarget = CBigNum().SetCompact(block.nBits).getuint256();
+            uint256 powHash;
+            unsigned int nonceMin;
+            unsigned int nonceMax;
+            unsigned int chunkSize;
+            int tid;
+            bool stopHashing = false;
+
+            do {
+#pragma omp parallel private(block, powHash, nonceMin, nonceMax, chunkSize, tid) shared(hashTarget, stopHashing)
+                {
+                    tid = omp_get_thread_num();
+                    chunkSize = 0xffffffff / omp_get_num_threads();
+
+                    if (tid == 0)
+                    {
+                        printf("Searching for genesis block nonce using %d threads, %u nonces/thread...\n", omp_get_num_threads(), chunkSize);
+                    }
+
+                    nonceMin = tid * chunkSize;
+                    nonceMax = (tid == omp_get_num_threads() - 1) ? 0xffffffff : nonceMin + chunkSize - 1;
+
+                    for (block.nNonce = nonceMin; block.nNonce <= nonceMax; ++block.nNonce)
+                    {
+                        if (stopHashing) continue;
+
+                        scrypt_1024_1_1_256(BEGIN(block.nVersion), BEGIN(powHash));
+                        if (powHash <= hashTarget)
+                        {
+                            printf("Found genesis block!\n");
+                            printf("block.nTime = %u\n", block.nTime);
+                            printf("block.nNonce = %u\n", block.nNonce);
+                            printf("block hash = %s\n", block.GetHash().ToString().c_str());
+                            printf("Shutting down threads...\n");
+                            stopHashing = true;
+                        }
+
+                        if (tid == 0 && (block.nNonce & 0xfff) == 0)
+                        {
+                            printf("Nonce progress %g%%.\n", (block.nNonce - nonceMin) / static_cast<double>(chunkSize) * 100.0);
+                        }
+                    }
+                }
+
+                if (!stopHashing)
+                {
+                    printf("Nonce wrapped, incrementing time.\n");
+                    ++block.nTime;
+                }
+            } while (!stopHashing);
+        }
+#endif
+
         assert(hash == hashGenesisBlock);
 
         // Start new block file
@@ -4347,7 +4435,7 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn)
             // Prioritize by fee once past the priority size or we run out of high-priority
             // transactions:
             if (!fSortedByFee &&
-                ((nBlockSize + nTxSize >= nBlockPrioritySize) || (dPriority < COIN * 576 / 250)))
+                ((nBlockSize + nTxSize >= nBlockPrioritySize) || (dPriority < COIN * 720 / 250)))
             {
                 fSortedByFee = true;
                 comparer = TxPriorityCompare(fSortedByFee);
