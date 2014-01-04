@@ -79,6 +79,8 @@ namespace Checkpoints
 
     bool CheckBlock(int nHeight, const uint256& hash)
     {
+        return true; // ANDREWCHANcoin TODO: remove me, only for premining
+
         if (fTestNet) return true; // Testnet has no checkpoints
         if (!GetBoolArg("-checkpoints", true))
             return true;
@@ -123,6 +125,8 @@ namespace Checkpoints
 
     int GetTotalBlocksEstimate()
     {
+        return 0; // ANDREWCHANcoin TODO: remove me, only for premining
+
         if (fTestNet) return 0; // Testnet has no checkpoints
         if (!GetBoolArg("-checkpoints", true))
             return 0;
@@ -134,6 +138,8 @@ namespace Checkpoints
 
     CBlockIndex* GetLastCheckpoint(const std::map<uint256, CBlockIndex*>& mapBlockIndex)
     {
+        return NULL; // ANDREWCHANcoin TODO: remove me, only for premining
+
         if (fTestNet) return NULL; // Testnet has no checkpoints
         if (!GetBoolArg("-checkpoints", true))
             return NULL;
