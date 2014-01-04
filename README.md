@@ -13,7 +13,12 @@ What is ANDREWCHANcoin?
 ANDREWCHANcoin is a joke cryptocoin based on Litecoin, which uses scrypt as a
 proof-of-work algorithm.
 
-More info about basic stats here once they are decided here.
+Basic coin stats:
+ * Scrypt based.
+ * New blocks every 2 minutes.
+ * Difficulty adjustment every 720 blocks (1 day).
+ * Initial mining subsidy is 1,000,000 coins.
+ * Subsidy halves every 106,500 blocks (~5 months).
 
 More info about binary downloads once we have them here.
 
