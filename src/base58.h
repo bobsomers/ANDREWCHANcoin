@@ -272,10 +272,10 @@ class CBitcoinAddress : public CBase58Data
 public:
     enum
     {
-        PUBKEY_ADDRESS = 48, // Litecoin addresses start with L
-        SCRIPT_ADDRESS = 5,
-        PUBKEY_ADDRESS_TEST = 111,
-        SCRIPT_ADDRESS_TEST = 196,
+        PUBKEY_ADDRESS = 23, // ANDREWCHANcoin addresses start with A
+        SCRIPT_ADDRESS = 85,
+        PUBKEY_ADDRESS_TEST = 28, // ANDREWCHANcoin testnet addresses start with C
+        SCRIPT_ADDRESS_TEST = 125,
     };
 
     bool Set(const CKeyID &id) {
