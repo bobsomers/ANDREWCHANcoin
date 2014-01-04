@@ -19,6 +19,8 @@ Basic coin stats:
  * Difficulty adjustment every 720 blocks (1 day).
  * Initial mining subsidy is 1,000,000 coins.
  * Subsidy halves every 106,500 blocks (~5 months).
+ * Total of ~214,000,000,000 coins in ~4 years.
+ * Largest transaction amount is 10,000,000,000 coins, for now.
 
 More info about binary downloads once we have them here.
 
