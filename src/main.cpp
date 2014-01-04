@@ -2824,45 +2824,45 @@ bool InitBlockIndex() {
         if (hash != hashGenesisBlock)
         {
             uint256 hashTarget = CBigNum().SetCompact(block.nBits).getuint256();
-            uint256 powHash;
-            unsigned int nonceMin;
-            unsigned int nonceMax;
-            unsigned int chunkSize;
-            int tid;
             bool stopHashing = false;
 
             do {
-#pragma omp parallel private(block, powHash, nonceMin, nonceMax, chunkSize, tid) shared(hashTarget, stopHashing)
+#pragma omp parallel shared(block, hashTarget, stopHashing)
                 {
-                    tid = omp_get_thread_num();
-                    chunkSize = 0xffffffff / omp_get_num_threads();
+                    CBlock testBlock = block;
+
+                    int tid = omp_get_thread_num();
+                    unsigned int chunkSize = 0xffffffff / omp_get_num_threads();
 
                     if (tid == 0)
                     {
                         printf("Searching for genesis block nonce using %d threads, %u nonces/thread...\n", omp_get_num_threads(), chunkSize);
                     }
 
-                    nonceMin = tid * chunkSize;
-                    nonceMax = (tid == omp_get_num_threads() - 1) ? 0xffffffff : nonceMin + chunkSize - 1;
+                    unsigned int nonceMin = tid * chunkSize;
+                    unsigned int nonceMax = (tid == omp_get_num_threads() - 1) ? 0xffffffff : nonceMin + chunkSize - 1;
 
-                    for (block.nNonce = nonceMin; block.nNonce <= nonceMax; ++block.nNonce)
+                    uint256 powHash;
+                    for (testBlock.nNonce = nonceMin; testBlock.nNonce <= nonceMax; ++testBlock.nNonce)
                     {
                         if (stopHashing) continue;
 
-                        scrypt_1024_1_1_256(BEGIN(block.nVersion), BEGIN(powHash));
+                        scrypt_1024_1_1_256(BEGIN(testBlock.nVersion), BEGIN(powHash));
                         if (powHash <= hashTarget)
                         {
                             printf("Found genesis block!\n");
-                            printf("block.nTime = %u\n", block.nTime);
-                            printf("block.nNonce = %u\n", block.nNonce);
-                            printf("block hash = %s\n", block.GetHash().ToString().c_str());
+                            printf("block.nTime = %u\n", testBlock.nTime);
+                            printf("block.nNonce = %u\n", testBlock.nNonce);
+                            printf("block hash = %s\n", testBlock.GetHash().ToString().c_str());
+                            printf("pow hash = %s\n", powHash.ToString().c_str());
+                            printf("merkle root = %s\n", testBlock.hashMerkleRoot.ToString().c_str());
                             printf("Shutting down threads...\n");
                             stopHashing = true;
                         }
 
-                        if (tid == 0 && (block.nNonce & 0xfff) == 0)
+                        if (tid == 0 && (testBlock.nNonce & 0xfff) == 0)
                         {
-                            printf("Nonce progress %g%%.\n", (block.nNonce - nonceMin) / static_cast<double>(chunkSize) * 100.0);
+                            printf("Nonce progress %g%%.\n", (testBlock.nNonce - nonceMin) / static_cast<double>(chunkSize) * 100.0);
                         }
                     }
                 }
