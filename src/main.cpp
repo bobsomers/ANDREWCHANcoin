@@ -38,7 +38,7 @@ CTxMemPool mempool;
 unsigned int nTransactionsUpdated = 0;
 
 map<uint256, CBlockIndex*> mapBlockIndex;
-uint256 hashGenesisBlock("0x");
+uint256 hashGenesisBlock("0x51ef460fe22a4fa1baba4bb766fdabcc8ce8e4cd21486cbe66379b1cb62b56b9");
 static CBigNum bnProofOfWorkLimit(~uint256(0) >> 20); // Litecoin: starting difficulty is 1 / 2^12
 CBlockIndex* pindexGenesisBlock = NULL;
 int nBestHeight = -1;
@@ -2754,7 +2754,7 @@ bool LoadBlockIndex()
         pchMessageStart[1] = 0xc1;
         pchMessageStart[2] = 0xb7;
         pchMessageStart[3] = 0xdc;
-        hashGenesisBlock = uint256("0x");
+        hashGenesisBlock = uint256("0x429f229b2c823eea20a2efe92042ecf42ffc1298c185a633abeeaf5eb2427c32");
     }
 
     //
@@ -2780,33 +2780,33 @@ bool InitBlockIndex() {
     // Only add the genesis block if not reindexing (in which case we reuse the one already on disk)
     if (!fReindex) {
         // Genesis Block:
-        // CBlock(hash=12a765e31ffd4059bada, PoW=0000050c34a64b415b6b, ver=1, hashPrevBlock=00000000000000000000, hashMerkleRoot=97ddfbbae6, nTime=1317972665, nBits=1e0ffff0, nNonce=2084524493, vtx=1)
-        //   CTransaction(hash=97ddfbbae6, ver=1, vin.size=1, vout.size=1, nLockTime=0)
-        //     CTxIn(COutPoint(0000000000, -1), coinbase 04ffff001d0104404e592054696d65732030352f4f63742f32303131205374657665204a6f62732c204170706c65e280997320566973696f6e6172792c2044696573206174203536)
-        //     CTxOut(nValue=50.00000000, scriptPubKey=040184710fa689ad5023690c80f3a4)
-        //   vMerkleTree: 97ddfbbae6
+        // CBlock(hash=51ef460fe22a4fa1baba4bb766fdabcc8ce8e4cd21486cbe66379b1cb62b56b9, input=01000000000000000000000000000000000000000000000000000000000000000000000033a0a476d47e820099d48b1f07ec7abc4bf6321242723d54e153b9979557c8fc602ec852f0ff0f1ead685795, PoW=0000006df41eb50c3793adcfe86ab1ae8761bca1afbd1355b1a2331dc6b128d6, ver=1, hashPrevBlock=0000000000000000000000000000000000000000000000000000000000000000, hashMerkleRoot=fcc8579597b953e1543d72421232f64bbc7aec071f8bd49900827ed476a4a033, nTime=1388850784, nBits=1e0ffff0, nNonce=2505533613, vtx=1)
+        //   CTransaction(hash=fcc8579597b953e1543d72421232f64bbc7aec071f8bd49900827ed476a4a033, ver=1, vin.size=1, vout.size=1, nLockTime=0)
+        //     CTxIn(COutPoint(0000000000000000000000000000000000000000000000000000000000000000, 4294967295), coinbase 04ffff001d01043635302043656e742073686f756c642068617665206120636f696e2e202d2d20412e204368616e2c2046422c20323031342d30312d3033)
+        //     CTxOut(error)
+        //   vMerkleTree: fcc8579597b953e1543d72421232f64bbc7aec071f8bd49900827ed476a4a033
 
         // Genesis block
-        const char* pszTimestamp = "If Kanye West makes it onto a altcoin, 50 Cent should have a coin. -- Andrew Chan, Facebook, 2014-01-03";
+        const char* pszTimestamp = "50 Cent should have a coin. -- A. Chan, FB, 2014-01-03";
         CTransaction txNew;
         txNew.vin.resize(1);
         txNew.vout.resize(1);
         txNew.vin[0].scriptSig = CScript() << 486604799 << CBigNum(4) << vector<unsigned char>((const unsigned char*)pszTimestamp, (const unsigned char*)pszTimestamp + strlen(pszTimestamp));
         txNew.vout[0].nValue = 1 * COIN;
-        txNew.vout[0].scriptPubKey = CScript() << ParseHex("040184710fa689ad5023690c80f3a49c8f13f8d45b8c857fbcbc8bc4a8e4d3eb4b10f4d4604fa08dce601aaf0f470216fe1b51850b4acf21b179c45070ac7b03a9") << OP_CHECKSIG;
+        txNew.vout[0].scriptPubKey = CScript() << 0x0 << OP_CHECKSIG;
         CBlock block;
         block.vtx.push_back(txNew);
         block.hashPrevBlock = 0;
         block.hashMerkleRoot = block.BuildMerkleTree();
         block.nVersion = 1;
-        block.nTime    = 1388838183;
         block.nBits    = 0x1e0ffff0;
-        block.nNonce   = 0;
 
+        block.nTime    = 1388850784;
+        block.nNonce   = 2505533613;
         if (fTestNet)
         {
-            block.nTime    = 1388838183;
-            block.nNonce   = 0;
+            block.nTime    = 1388850540;
+            block.nNonce   = 1431664983;
         }
 
         //// debug print
@@ -2814,7 +2814,7 @@ bool InitBlockIndex() {
         printf("%s\n", hash.ToString().c_str());
         printf("%s\n", hashGenesisBlock.ToString().c_str());
         printf("%s\n", block.hashMerkleRoot.ToString().c_str());
-        assert(block.hashMerkleRoot == uint256("0xbdabd4f856991e517ad8959cb8499ce1cbc74de24326c2960dfa0c5a143a6f3f"));
+        assert(block.hashMerkleRoot == uint256("0xfcc8579597b953e1543d72421232f64bbc7aec071f8bd49900827ed476a4a033"));
         block.print();
 
         // ANDREWCHANcoin: Put back in code to search for a genesis block. Why
