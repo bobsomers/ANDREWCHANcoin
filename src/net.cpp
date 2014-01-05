@@ -1309,7 +1309,7 @@ void ThreadOpenConnections()
     }
 
     // Initiate network connections
-    int64 nStart = GetTime();
+    //int64 nStart = GetTime();
     loop
     {
         ProcessOneShot();
@@ -1320,7 +1320,8 @@ void ThreadOpenConnections()
         boost::this_thread::interruption_point();
 
         // Add seed nodes if IRC isn't working
-        if (addrman.size()==0 && (GetTime() - nStart > 60) && !fTestNet)
+        //if (addrman.size()==0 && (GetTime() - nStart > 60) && !fTestNet)
+        if (addrman.size()==0 && !fTestNet)
         {
             std::vector<CAddress> vAdd;
             for (unsigned int i = 0; i < ARRAYLEN(pnSeed); i++)
