@@ -1,7 +1,7 @@
 ANDREWCHANcoin
 ================================
 
-Website URL here.
+http://andrewchancoin.com
 
 Copyright (c) 2009-2013 Bitcoin Developers  
 Copyright (c) 2011-2013 Litecoin Developers  
@@ -22,7 +22,8 @@ Basic coin stats:
  * Total of ~214,000,000,000 coins in ~4 years.
  * Largest transaction amount is 10,000,000,000 coins, for now.
 
-More info about binary downloads once we have them here.
+Binary downloads for Windows and Mac can be found at
+[http://andrewchancoin.com](http://andrewchancoin.com).
 
 License
 -------
@@ -41,16 +42,27 @@ Developers should expect to rework and resubmit patches if the code doesn't
 match the project's coding conventions (see `doc/coding.txt`) or are
 controversial.
 
-Testing
--------
+Compiling
+---------
 
-Unit tests for the core code are in `src/test/`. To compile and run them:
+Make sure you have your dependencies in order (namely Boost, Berkeley DB 4,
+openssl, miniupnpc, and Qt 4 for the GUI app).
 
-    cd src; make -f makefile.unix test
+To build the command line app:
 
-Unit tests for the GUI code are in `src/qt/test/`. To compile and run them:
+    cd src; make -f makefile.unix
 
-    qmake BITCOIN_QT_TEST=1 -o Makefile.test bitcoin-qt.pro
-    make -f Makefile.test
-    ./litecoin-qt_test
+To build the GUI app:
 
+    qmake
+    make
+
+Mining
+------
+
+This operates exactly the same as Litecoin. You can mine with your CPU by
+sending the command
+
+    setgenerate true <num threads>
+
+to your command line or GUI app. To mine using your GPU, use cgminer or bfgminer.
