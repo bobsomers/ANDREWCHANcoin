@@ -13,8 +13,9 @@ QList<BitcoinUnits::Unit> BitcoinUnits::availableUnits()
 {
     QList<BitcoinUnits::Unit> unitlist;
     unitlist.append(BTC);
-    unitlist.append(mBTC);
-    unitlist.append(uBTC);
+    unitlist.append(kBTC);
+    unitlist.append(MBTC);
+    unitlist.append(GBTC);
     return unitlist;
 }
 
@@ -23,8 +24,9 @@ bool BitcoinUnits::valid(int unit)
     switch(unit)
     {
     case BTC:
-    case mBTC:
-    case uBTC:
+    case kBTC:
+    case MBTC:
+    case GBTC:
         return true;
     default:
         return false;
@@ -35,9 +37,10 @@ QString BitcoinUnits::name(int unit)
 {
     switch(unit)
     {
-    case BTC: return QString("ACC");
-    case mBTC: return QString("mACC");
-    case uBTC: return QString::fromUtf8("μACC");
+    case BTC: return QString("Chans");
+    case kBTC: return QString("Kilochans");
+    case MBTC: return QString("Megachans");
+    case GBTC: return QString("Gigachans");
     default: return QString("???");
     }
 }
@@ -47,8 +50,9 @@ QString BitcoinUnits::description(int unit)
     switch(unit)
     {
     case BTC: return QString("ANDREWCHANcoins");
-    case mBTC: return QString("Milli-ANDREWCHANcoins (1 / 1,000)");
-    case uBTC: return QString("Micro-ANDREWCHANcoins (1 / 1,000,000)");
+    case kBTC: return QString("Kilo-ANDREWCHANcoins (1,000 Chans)");
+    case MBTC: return QString("Mega-ANDREWCHANcoins (1,000,000 Chans)");
+    case GBTC: return QString("Giga-ANDREWCHANcoins (1,000,000,000 Chans)");
     default: return QString("???");
     }
 }
@@ -58,8 +62,9 @@ qint64 BitcoinUnits::factor(int unit)
     switch(unit)
     {
     case BTC:  return 100000000;
-    case mBTC: return 100000;
-    case uBTC: return 100;
+    case kBTC: return 100000000000LL;
+    case MBTC: return 100000000000000LL;
+    case GBTC: return 100000000000000000LL;
     default:   return 100000000;
     }
 }
@@ -68,9 +73,10 @@ int BitcoinUnits::amountDigits(int unit)
 {
     switch(unit)
     {
-    case BTC: return 8; // 21,000,000 (# digits, without commas)
-    case mBTC: return 11; // 21,000,000,000
-    case uBTC: return 14; // 21,000,000,000,000
+    case BTC: return 12; // 214,000,000,000 (# digits, without commas)
+    case kBTC: return 9; // 214,000,000
+    case MBTC: return 6; // 214,000
+    case GBTC: return 3; // 214
     default: return 0;
     }
 }
@@ -79,9 +85,10 @@ int BitcoinUnits::decimals(int unit)
 {
     switch(unit)
     {
-    case BTC: return 8;
-    case mBTC: return 5;
-    case uBTC: return 2;
+    case BTC:
+    case kBTC:
+    case MBTC:
+    case GBTC: return 8;
     default: return 0;
     }
 }
